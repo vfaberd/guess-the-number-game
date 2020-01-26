@@ -2,12 +2,21 @@ package com.faberv;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 public class GameImpl implements Game {
     private static final Logger log = LoggerFactory.getLogger(GameImpl.class);
 
+    @Autowired
     private NumberGenerator numberGenerator;
-    private int guessCount = 10;
+
+    @Autowired
+    @GuessCount
+    private int guessCount;
     private int number;
     private int guess;
     private int smallest;
@@ -15,18 +24,21 @@ public class GameImpl implements Game {
     private int remainingGuesses;
     private boolean validNumberRange = true;
 
-    public void setNumberGenerator(NumberGenerator numberGenerator) {
-        this.numberGenerator = numberGenerator;
-    }
 
+    @PostConstruct
     @Override
     public void reset() {
-        smallest = 0;
-        guess = 0;
+        smallest = numberGenerator.getMinNumber();
+        guess = numberGenerator.getMinNumber();
         remainingGuesses = guessCount;
         biggest = numberGenerator.getMaxNumber();
         number = numberGenerator.next();
         log.debug("the number is {}", number);
+    }
+
+    @PreDestroy
+    public void preDestroy() {
+        log.info("in Game preDestroy()");
     }
 
     @Override
@@ -57,6 +69,11 @@ public class GameImpl implements Game {
     @Override
     public int getRemainingGuesses() {
         return remainingGuesses;
+    }
+
+    @Override
+    public int getGuessCount() {
+        return guessCount;
     }
 
     @Override
